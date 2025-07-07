@@ -4,11 +4,12 @@ A Node.js CLI chatbot tool for Termux that allows you to interact with the Googl
 
 ## Features
 
--   **Enhanced ASCII Banner:** A larger, more colorful ASCII banner at launch.
+-   **Enhanced ASCII Banner:** A full-width, colorful ASCII banner with subtitle and description.
 -   **API Key Management:** Prompts for Gemini API Key on first use and stores it securely in a `.env` file. Each user provides their own key.
 -   **Interactive Chat:** Provides an interactive command-line interface for chatting with Gemini.
 -   **Chat History:** Maintains chat history for context-aware conversations.
--   **Styled Output:** Uses `chalk` and `boxen` for a visually appealing interface, including bordered Gemini responses and a framed API key input.
+-   **Styled Output:** Uses `chalk` and `boxen` for a visually appealing interface, including bordered Gemini responses.
+-   **Typing Indicator:** Displays a "Gemini is typing..." message while waiting for a response.
 
 ## Prerequisites
 
@@ -58,13 +59,14 @@ node index.js
 ### Commands
 
 -   `exit`: Exit the chat.
--   `--help` or `help`: Show usage instructions.
+-   `--help` or `help`: Show usage instructions, including contact and info.
+-   `/clear`: Clear the chat history.
+-   `/apikey`: Change your Gemini API Key.
 
 ## How it Works
 
 The tool uses the following packages:
 
--   `figlet`: For the ASCII banner.
 -   `chalk` and `gradient-string`: For styling the output.
 -   `dotenv`: To manage the Gemini API Key.
 -   `readline`: For the interactive CLI.

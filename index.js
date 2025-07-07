@@ -1,98 +1,96 @@
 #!/usr/bin/env node
-import figlet from 'figlet';
 import chalk from 'chalk';
-import gradient from 'gradient-string';
 import readline from 'readline';
-import axios from 'axios';
-import boxen from 'boxen';
-import fs from 'fs';
 import dotenv from 'dotenv';
-dotenv.config();
+import boxen from 'boxen';
+import { GeminiChatClient } from './src/geminiChat.js';
+import { displayBanner, getApiKey, clearChatHistory, changeApiKey } from './src/utils.js';
+import { MESSAGES, PROMPTS, COMMANDS, HELP_CONTENT } from './src/constants.js';
+import wrapAnsi from 'wrap-ansi';
 
-const displayBanner = () => {
-  const banner = figlet.textSync('LWMHR', { font: 'Big' }); // Changed font to 'Big'
-  const coloredBanner = gradient.rainbow.multiline(banner); // Changed gradient to 'rainbow'
-  console.log(coloredBanner);
-  console.log(chalk.cyan(boxen('Welcome to LWMHR - Chat with Gemini API via Termux!', { padding: 1, margin: 1, borderStyle: 'round' })));
-};
+dotenv.config();
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const getApiKey = () => {
-  return new Promise((resolve) => {
-    if (process.env.GEMINI_API_KEY) {
-      resolve(process.env.GEMINI_API_KEY);
-    } else {
-      rl.question(chalk.yellow(boxen('Please enter your Gemini API Key: ', { padding: 1, margin: 1, borderStyle: 'single' })), (apiKey) => { // Added boxen to API key prompt
-        fs.writeFileSync('.env', `GEMINI_API_KEY=${apiKey}`);
-        process.env.GEMINI_API_KEY = apiKey;
-        resolve(apiKey);
-      });
-    }
-  });
-};
-
-const chatHistory = [];
-
-const chatWithGemini = async (apiKey, message) => {
-  try {
-    const userMessage = { role: 'user', parts: [{ text: message }] };
-    const contents = [...chatHistory, userMessage];
-
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        contents: contents,
-      }
-    );
-
-    if (response.data.candidates && response.data.candidates.length > 0 && response.data.candidates[0].content.parts) {
-        const geminiContent = response.data.candidates[0].content;
-        const text = geminiContent.parts[0].text;
-
-        chatHistory.push(userMessage);
-        chatHistory.push(geminiContent);
-
-        console.log(boxen(chalk.green('Gemini:') + ' ' + text, { padding: 1, margin: 1, borderStyle: 'double', borderColor: 'green' })); // Added boxen to Gemini output
-    } else {
-        console.log(chalk.yellow('Gemini: Received an empty response.'));
-    }
-
-  } catch (error) {
-    let errorMessage = error.message;
-    if (error.response && error.response.data && error.response.data.error) {
-        errorMessage = `[${error.response.status}] ${error.response.data.error.message}`;
-    }
-    console.error(chalk.red('Error communicating with Gemini API:'), errorMessage);
-  }
-};
-
 const startChat = async () => {
   displayBanner();
-  const apiKey = await getApiKey();
+  let apiKey;
+  try {
+    apiKey = await getApiKey(rl);
+  } catch (error) {
+    console.error(chalk.red(`Error getting API key: ${error.message}`));
+    rl.close();
+    return;
+  }
 
-  console.log(chalk.blue('You can start chatting with Gemini. Type "exit" to quit.'));
+  const geminiClient = new GeminiChatClient(apiKey);
+
+  console.log(chalk.blue(MESSAGES.CHAT_START));
+
+  rl.setPrompt(chalk.white(PROMPTS.USER_INPUT)); // Set the actual readline prompt
+  rl.prompt();
 
   rl.on('line', async (input) => {
-    if (input.toLowerCase() === 'exit') {
-      rl.close();
-      return;
-    }
-    if (input.toLowerCase() === '--help' || input.toLowerCase() === 'help') {
-        console.log(chalk.yellow('Commands:'));
-        console.log(chalk.yellow('  exit    - Exit the chat'));
-        console.log(chalk.yellow('  --help  - Show this help message'));
-        rl.prompt();
+    const command = input.toLowerCase().trim();
+
+    switch (command) {
+      case COMMANDS.EXIT:
+        rl.close();
         return;
+      case COMMANDS.HELP:
+        console.log(chalk.yellow('Commands:'));
+        console.log(chalk.yellow(`  ${COMMANDS.EXIT}          - Exit the chat`));
+        console.log(chalk.yellow(`  ${COMMANDS.HELP}         - Show this help message`));
+        console.log(chalk.yellow(`  ${COMMANDS.CLEAR_HISTORY}  - Clear chat history`));
+        console.log(chalk.yellow(`  ${COMMANDS.CHANGE_API_KEY} - Change Gemini API Key`));
+        console.log(''); // Add an empty line
+        console.log(chalk.yellow('Contact & Info:'));
+        console.log(chalk.yellow(`  Email 1: ${HELP_CONTENT.EMAIL_1}`));
+        console.log(chalk.yellow(`  Email 2: ${HELP_CONTENT.EMAIL_2}`));
+        console.log(chalk.yellow(`  GitHub:  github.com/${HELP_CONTENT.GITHUB_USERNAME}`));
+        console.log(chalk.yellow(`  More Info: ${HELP_CONTENT.MORE_INFO}`));
+        break;
+      case COMMANDS.CLEAR_HISTORY:
+        clearChatHistory(geminiClient);
+        break;
+      case COMMANDS.CHANGE_API_KEY:
+        try {
+          apiKey = await changeApiKey(rl);
+          geminiClient.updateApiKey(apiKey);
+        } catch (error) {
+          console.error(chalk.red(`Error changing API key: ${error.message}`));
+        }
+        break;
+      default:
+        // Typing effect
+        process.stdout.write(chalk.yellow(MESSAGES.TYPING_INDICATOR));
+        readline.cursorTo(process.stdout, 0);
+
+        const response = await geminiClient.sendMessage(input);
+
+        readline.clearLine(process.stdout, 0); // Clear the typing indicator line
+
+        if (response.success) {
+          console.log(boxen(chalk.green('Gemini:') + ' ' + response.response, { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'blue', width: 120 }));
+        } else {
+          console.error(chalk.red(response.error));
+        }
+        break;
     }
-    await chatWithGemini(apiKey, input);
     rl.prompt();
   });
 
-  rl.prompt();
+  rl.on('SIGINT', () => {
+    rl.close();
+  });
+
+  rl.on('close', () => {
+    console.log(chalk.blue('Exiting chat. Goodbye!'));
+    process.exit(0);
+  });
 };
 
 startChat();
