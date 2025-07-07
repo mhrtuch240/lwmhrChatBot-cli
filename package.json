@@ -1,0 +1,25 @@
+{
+  "name": "lwmhrchatbot-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bin": {
+    "lwmhr": "index.js"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "boxen": "^8.0.1",
+    "chalk": "^5.4.1",
+    "dotenv": "^17.0.1",
+    "figlet": "^1.8.1",
+    "gradient-string": "^3.0.0",
+    "readline": "^1.3.0"
+  }
+}
