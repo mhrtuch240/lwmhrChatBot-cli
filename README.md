@@ -20,7 +20,7 @@ A Node.js CLI chatbot tool for Termux that allows you to interact with the Googl
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/lwmhrChatBot-cli.git
+    git clone https://github.com/mhrtuch240/lwmhrChatBot-cli.git
     cd lwmhrChatBot-cli
     ```
 
