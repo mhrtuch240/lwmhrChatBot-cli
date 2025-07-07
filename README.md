@@ -24,21 +24,26 @@ A Node.js CLI chatbot tool for Termux that allows you to interact with the Googl
     git clone https://github.com/mhrtuch240/lwmhrChatBot-cli.git
     cd lwmhrChatBot-cli
     ```
+    ***Update to new version:***
 
-2.  **Install dependencies:**
+    ...bash
+    git fetch --tags
+    ...
+
+3.  **Install dependencies:**
 
     ```bash
     npm install
     ```
 
-3.  **Make it globally accessible (optional but recommended):**
+4.  **Make it globally accessible (optional but recommended):**
 
     ```bash
     npm link
     ```
     This command creates a symbolic link so you can run `lwmhr` from any directory.
 
-4.  **Set up your API Key:**
+5.  **Set up your API Key:**
 
     The first time you run the application, you will be prompted to enter your Gemini API Key. It will be saved in a `.env` file for future use.
 
