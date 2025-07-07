@@ -26,9 +26,9 @@ A Node.js CLI chatbot tool for Termux that allows you to interact with the Googl
     ```
     ***Update to new version:***
 
-    ...bash
+    ```bash
     git fetch --tags
-    ...
+    ```
 
 3.  **Install dependencies:**
 
