@@ -1,6 +1,6 @@
 {
   "name": "lwmhrchatbot-cli",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A CLI tool and Node.js library for interacting with the Gemini API.",
   "main": "index.js",
   "bin": {
