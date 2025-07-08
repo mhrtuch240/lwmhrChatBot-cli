@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A CLI tool and Node.js library for interacting with the Gemini API.",
   "main": "index.js",
+  "bin": {
+    "lwmhr": "./index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
